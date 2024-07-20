@@ -33,8 +33,8 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/social-media-api.git
-   cd social-media-api
+   git clone git@github.com:RidhaMuneer/social-core.git
+   cd social-core
     ```
 
 2. **Create a Virtual Environment**:
