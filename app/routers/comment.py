@@ -7,6 +7,31 @@ from ..oauth2 import get_current_user
 
 router = APIRouter(prefix="/app/comment", tags=["Comment"])
 
+@router.get("/{id}", status_code=status.HTTP_200_OK)
+def get_comments(id: int, db: Session = Depends(get_db)):
+    comments_with_users = (
+        db.query(models.Comment, models.User)
+        .join(models.User, models.Comment.owner_id == models.User.id)
+        .filter(models.Comment.post_id == id)
+        .all()
+    )
+
+    return [
+        {
+            "id": comment.id,
+            "content": comment.content,
+            "created_at": comment.created_at,
+            "post_id": comment.post_id,
+            "owner_id": comment.owner_id,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "image_url": user.image_url if hasattr(user, "image_url") else None
+            }
+        }
+        for comment, user in comments_with_users
+    ]
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def comment(
