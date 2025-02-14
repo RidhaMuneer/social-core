@@ -1,6 +1,6 @@
 # Social Media API
 
-Welcome to the Social Media API! This RESTful API allows users to interact on a social media platform. Users can post content, like posts, comment on posts,follow other users, and receive follow suggestions. It also includes user authentication and protected routes using JWT tokens. Images uploaded by users are stored in AWS S3.
+Welcome to the Social Media API! This RESTful API allows users to interact on a social media platform. Users can post content, like posts, comment on posts, follow other users, and receive follow suggestions. It also includes user authentication and protected routes using JWT tokens. Images uploaded by users are stored in AWS S3.
 
 ## Features
 
