@@ -10,7 +10,7 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 - **Comment on Posts**: Users can comment on posts to express their appreciation.
 - **Follow Users**: Follow other users to see their posts and updates.
 - **Follow Suggestions**: Get suggestions on users to follow based on your current follow list.
-- **View User Stats**: See how many followers and followings a user has.
+- **View User Status**: See how many followers and followings a user has.
 - **Image Storage**: User-uploaded images are securely stored in AWS S3.
 - **Protected Routes**: Access to certain routes is restricted to authenticated users with valid JWT tokens.
 
