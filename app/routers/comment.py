@@ -56,10 +56,15 @@ def comment(
 
     owner = db.query(models.User).filter(models.User.id == new_comment.owner_id).first()
     return {
+        "id": new_comment.id,
         "content": new_comment.content,
         "created_at": new_comment.created_at,
-        "owner_username": owner.username,
-        "owner_image_url": owner.image_url
+        "user": {
+            "id": owner.id,
+            "username": owner.username,
+            "email": owner.email,
+            "image_url": owner.image_url
+        }
     }
 
 
