@@ -7,7 +7,7 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 - **User Authentication**: Register, login, and manage user sessions using JWT tokens.
 - **Post Management**: Create, read, update, and delete posts.
 - **Like Posts**: Users can like posts to express their appreciation.
-- **Comment Posts**: Users can comment on posts to express their appreciation.
+- **Comment on Posts**: Users can comment on posts to express their appreciation.
 - **Follow Users**: Follow other users to see their posts and updates.
 - **Follow Suggestions**: Get suggestions on users to follow based on your current follow list.
 - **View User Stats**: See how many followers and followings a user has.
