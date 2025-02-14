@@ -39,6 +39,7 @@ class PostResponse(BaseModel):
     published: bool
     image_url: str
     created_at: datetime
+    isLiked: bool
     owner_id: int
     like_count: int
     owner: User

@@ -33,7 +33,7 @@ router = APIRouter(prefix="/app/posts", tags=["Posts"])
 
 @router.get("/", response_model=List[PostResponse])
 def get_posts(
-    db: Session = Depends(get_db), limit: int = 10, search: Optional[str] = ""
+    db: Session = Depends(get_db), limit: int = 10, search: Optional[str] = "", current_user: models.User = Depends(get_current_user)
 ):
     posts_with_likes_and_users = (
         db.query(
@@ -58,6 +58,7 @@ def get_posts(
             image_url=post.image_url,
             created_at=post.created_at,
             owner_id=post.owner_id,
+            isLiked=db.query(models.Post).join(models.Like).filter(models.Like.post_id == post.id).filter(models.Like.user_id == current_user.id).first() is not None,
             like_count=like_count,
             owner=User(id=user.id, username=user.username, image_url=user.image_url),
         )
