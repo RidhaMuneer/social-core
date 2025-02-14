@@ -11,9 +11,9 @@ import random
 router = APIRouter(prefix="/app", tags=["Users"])
 
 
-@router.get("/user", response_model=UserResponse)
+@router.get("/user")
 def get_user(
-    db: Session = Depends(get_db), current_user: int = Depends(get_current_user)
+    db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)
 ):
     user = db.query(models.User).filter(models.User.id == current_user.id).first()
     if not user:
@@ -24,13 +24,17 @@ def get_user(
 
     follower_count = (
         db.query(models.Follower)
-        .filter(models.Follower.following_id == current_user.id)
+        .filter(models.Follower.following_id == user.id)
         .count()
     )
     following_count = (
         db.query(models.Follower)
-        .filter(models.Follower.follower_id == current_user.id)
+        .filter(models.Follower.follower_id == user.id)
         .count()
+    )
+
+    user_posts = (
+        db.query(models.Post).filter(models.Post.owner_id == user.id).all()
     )
 
     return {
@@ -40,10 +44,11 @@ def get_user(
         "image_url": user.image_url,
         "follower_count": follower_count,
         "following_count": following_count,
+        "posts": user_posts
     }
 
 
-@router.get("/user/{id}", response_model=UserResponse)
+@router.get("/user/{id}")
 def get_user_from_id(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
@@ -59,6 +64,10 @@ def get_user_from_id(id: int, db: Session = Depends(get_db)):
         db.query(models.Follower).filter(models.Follower.follower_id == id).count()
     )
 
+    user_posts = (
+        db.query(models.Post).filter(models.Post.owner_id == id).all()
+    )
+
     return {
         "id": user.id,
         "email": user.email,
@@ -66,44 +75,8 @@ def get_user_from_id(id: int, db: Session = Depends(get_db)):
         "image_url": user.image_url,
         "follower_count": follower_count,
         "following_count": following_count,
+        "posts": user_posts
     }
-
-
-@router.get("/user/{id}/posts")
-def get_user_posts(id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {id} does not exist",
-        )
-    posts = db.query(models.Post).filter(models.Post.owner_id == id).all()
-    if not posts:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't have any posts"
-        )
-    return posts
-
-
-@router.get("/users/{id}/posts/{post_id}")
-def get_user_post(id: int, post_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {id} does not exist",
-        )
-    post = (
-        db.query(models.Post)
-        .filter(models.Post.owner_id == id)
-        .filter(models.Post.id == post_id)
-        .first()
-    )
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't have any posts"
-        )
-    return post
 
 
 @router.get("/user/{id}/followers", response_model=List[UserResponse])
@@ -180,7 +153,7 @@ def search_users(search: Optional[str] = "", db: Session = Depends(get_db)):
 @router.get("/users/suggestions", response_model=List[User])
 def get_user_suggestions(
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
     limit: int = 3
 ):
     following_ids = db.query(models.Follower.following_id).filter(models.Follower.follower_id == current_user.id).all()

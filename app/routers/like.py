@@ -12,7 +12,7 @@ router = APIRouter(prefix="/app/like", tags=["Like"])
 def like(
     like: Like,
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     post = db.query(models.Post).filter(models.Post.id == like.post_id).first()
     if not post:

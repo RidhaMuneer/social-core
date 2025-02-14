@@ -29,6 +29,9 @@ class User(BaseModel):
     username: str
     image_url: str
 
+class Comment(BaseModel):
+    post_id: int
+    content: str
 
 class PostResponse(BaseModel):
     id: int

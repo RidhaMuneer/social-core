@@ -67,7 +67,7 @@ def get_posts(
     return results
 
 
-@router.get("/{id}", response_model=PostResponse)
+@router.get("/{id}")
 def get_post(id: int, db: Session = Depends(get_db)):
     post_with_likes_and_user = (
         db.query(models.Post, func.count(models.Like.post_id).label("like_count"), models.User)
@@ -79,6 +79,13 @@ def get_post(id: int, db: Session = Depends(get_db)):
         .first()
     )
 
+    comments = (
+        db.query(models.Comment)
+        .filter(models.Comment.post_id == id)
+        .order_by(models.Comment.created_at.desc())
+        .all()
+    )
+
     if not post_with_likes_and_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -86,22 +93,22 @@ def get_post(id: int, db: Session = Depends(get_db)):
         )
 
     post, like_count, user = post_with_likes_and_user
-
-    response_post = PostResponse(
-        id=post.id,
-        content=post.content,
-        published=post.published,
-        image_url=post.image_url,
-        created_at=post.created_at,
-        owner_id=post.owner_id,
-        like_count=like_count,
-        owner=User(
+    
+    return {
+        "id": post.id,
+        "content": post.content,
+        "published": post.published,
+        "image_url": post.image_url,
+        "created_at": post.created_at,
+        "owner_id": post.owner_id,
+        "like_count": like_count,
+        "comments": comments,
+        "owner": User(
             id=user.id,
             username=user.username,
             image_url=user.image_url
         ),
-    )
-    return response_post
+    }
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
@@ -110,7 +117,7 @@ def create_posts(
     published: bool = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     image_url = generate_random_url(10)
     new_post = models.Post(
@@ -145,7 +152,7 @@ def create_posts(
 def delete_post(
     id: int,
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     deleted_post = db.query(models.Post).filter(models.Post.id == id)
     if not deleted_post.first():
@@ -164,7 +171,7 @@ def update_post(
     id: int,
     post: PostCreate,
     db: Session = Depends(get_db),
-    current_user: int = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     updated_post_query = db.query(models.Post).filter(models.Post.id == id)
     post_query = updated_post_query.first()
