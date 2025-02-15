@@ -140,6 +140,7 @@ def create_posts(
         created_at=new_post.created_at,
         owner_id=new_post.owner_id,
         like_count=0,
+        isLiked=False,
         owner=User(
             id=user.id,
             username=user.username,

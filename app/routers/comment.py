@@ -12,7 +12,7 @@ def get_comments(id: int, db: Session = Depends(get_db)):
     comments_with_users = (
         db.query(models.Comment, models.User)
         .join(models.User, models.Comment.owner_id == models.User.id)
-        .filter(models.Comment.post_id == id)
+        .filter(models.Comment.post_id == id).order_by(models.Comment.created_at.desc())
         .all()
     )
 
