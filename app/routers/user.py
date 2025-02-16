@@ -47,9 +47,12 @@ def get_user(
         "posts": user_posts
     }
 
-
 @router.get("/user/{id}")
-def get_user_from_id(id: int, db: Session = Depends(get_db)):
+def get_user_from_id(
+    id: int, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
         raise HTTPException(
@@ -57,16 +60,39 @@ def get_user_from_id(id: int, db: Session = Depends(get_db)):
             detail=f"User with id {id} does not exist",
         )
 
-    follower_count = (
-        db.query(models.Follower).filter(models.Follower.following_id == id).count()
-    )
-    following_count = (
-        db.query(models.Follower).filter(models.Follower.follower_id == id).count()
+    follower_count = db.query(models.Follower).filter(models.Follower.following_id == id).count()
+    following_count = db.query(models.Follower).filter(models.Follower.follower_id == id).count()
+
+    # Query to get posts with like count
+    posts_with_likes_and_users = (
+        db.query(
+            models.Post,
+            func.count(models.Like.post_id).label("like_count"),
+        )
+        .outerjoin(models.Like, models.Like.post_id == models.Post.id)
+        .filter(models.Post.owner_id == id)
+        .group_by(models.Post.id)
+        .order_by(models.Post.created_at.desc())
+        .all()
     )
 
-    user_posts = (
-        db.query(models.Post).filter(models.Post.owner_id == id).all()
-    )
+    posts_with_likes = []
+    for post, like_count in posts_with_likes_and_users:
+        is_liked = (
+            db.query(models.Like)
+            .filter(models.Like.post_id == post.id, models.Like.user_id == current_user.id)
+            .first() is not None
+        )
+
+        posts_with_likes.append({
+            "id": post.id,
+            "content": post.content,
+            "image_url": post.image_url,
+            "published": post.published,
+            "created_at": post.created_at,
+            "like_count": like_count,
+            "is_liked": is_liked
+        })
 
     return {
         "id": user.id,
@@ -75,7 +101,7 @@ def get_user_from_id(id: int, db: Session = Depends(get_db)):
         "image_url": user.image_url,
         "follower_count": follower_count,
         "following_count": following_count,
-        "posts": user_posts
+        "posts": posts_with_likes
     }
 
 
