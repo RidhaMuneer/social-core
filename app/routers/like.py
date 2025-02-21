@@ -8,7 +8,6 @@ from app.controllers.like_controller import like_controller
 
 router = APIRouter(prefix="/app/like", tags=["Like"])
 
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def like(
     like: Like,

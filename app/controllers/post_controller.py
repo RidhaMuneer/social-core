@@ -45,7 +45,6 @@ def get_one_post(id: int, db: Session = Depends(get_db), current_user: User = De
         )
     )
 
-
 def get_all_posts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), limit: int = 10, search: Optional[str] = ""):
     posts_with_users = get_all_posts_and_search(db, limit, search, current_user)
 
