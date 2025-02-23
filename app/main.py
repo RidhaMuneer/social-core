@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from . import models
-from .database import engine
-from .routers import post, user, auth, like, follow, comment
+from app import models
+from app.database import engine
+from app.routers import post, user, auth, like, follow, comment
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

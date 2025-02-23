@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas import FollowRequest, User
 from app.oauth2 import get_current_user
-from app.controllers.follow_controller import follow_controller
+from app.controllers.follow_controller import FollowController
 
 router = APIRouter(prefix="/app/follow", tags=["Follow"])
 
@@ -13,4 +13,4 @@ def follow(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return follow_controller(follow_request, db, current_user)
+    return FollowController.follow(follow_request, db, current_user)
