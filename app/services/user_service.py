@@ -34,14 +34,10 @@ class UserService:
 
     @staticmethod
     def get_user_posts_with_likes(db: Session, user_id: int, current_user_id: int):
-        posts_with_likes = db.query(
-            models.Post, func.count(models.Like.post_id).label("like_count")
-        ).outerjoin(models.Like, models.Like.post_id == models.Post.id).filter(
-            models.Post.owner_id == user_id
-        ).group_by(models.Post.id).order_by(models.Post.created_at.desc()).all()
+        posts_with_likes = db.query(models.Post).filter(models.Post.owner_id == user_id).order_by(models.Post.created_at.desc()).all()
 
         posts = []
-        for post, like_count in posts_with_likes:
+        for post in posts_with_likes:
             is_liked = db.query(models.Like).filter(
                 models.Like.post_id == post.id, models.Like.user_id == current_user_id
             ).first() is not None
@@ -52,7 +48,7 @@ class UserService:
                 "image_url": post.image_url,
                 "published": post.published,
                 "created_at": post.created_at,
-                "like_count": like_count,
+                "like_count": post.likes,
                 "is_liked": is_liked
             })
 
