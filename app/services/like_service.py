@@ -1,11 +1,14 @@
 from app.schemas import Like
 from sqlalchemy.orm import Session
-from app.models import User, Post, Like as LikeModel
+from app.models import User, Like as LikeModel
+from app.services.post_service import PostService
+
+post_service = PostService()
 
 class LikeService:
     @staticmethod
     def like(like: Like, db: Session, current_user: User):
-        post = db.query(Post).filter(Post.id == like.post_id).first()
+        post = post_service.get_by_id(db, like.post_id)
 
         if not post:
             return None

@@ -1,47 +1,46 @@
 from sqlalchemy.orm import Session
-from app.models import Comment, User, Post
+from app.models import Comment, User
 from app.schemas import Comment as CommentSchema, User as UserSchema
+from app.services.post_service import PostService
+from app.services.user_service import UserService
+from app.services.base_service import BaseService
 
-class CommentService:
-    @staticmethod
-    def get_comments(id: int, db: Session):
+post_service = PostService()
+user_Service = UserService()
+
+class CommentService(BaseService[Comment]):
+    def __init__(self):
+        super().__init__(Comment)
+
+    def get_comments(self, db: Session, post_id: int):
         comments_with_users = (
             db.query(Comment, User)
             .join(User, Comment.owner_id == User.id)
-            .filter(Comment.post_id == id).order_by(Comment.created_at.desc())
+            .filter(Comment.post_id == post_id).order_by(Comment.created_at.desc())
             .all()
         )
 
         return comments_with_users
 
-    @staticmethod
-    def create_comment(comment: CommentSchema, db: Session, current_user: UserSchema):
-        post = db.query(Post).filter(Post.id == comment.post_id).first()
+    def create_comment(self, db: Session, comment: CommentSchema, current_user: UserSchema):
+        post = post_service.get_by_id(db, comment.post_id)
         if not post:
             return None
     
-        new_comment = Comment(
-            post_id=comment.post_id,
-            content=comment.content,
-            owner_id=current_user.id,
-        )
+        new_comment = self.create(db, {
+            "post_id": comment.post_id,
+            "content": comment.content,
+            "owner_id": current_user.id,
+        })
 
-        db.add(new_comment)
-        db.commit()
-        db.refresh(new_comment)
-
-        owner = db.query(User).filter(User.id == new_comment.owner_id).first()
-
+        owner = user_Service.get_user_by_id(db, new_comment.owner_id)
         return new_comment, owner
 
-    @staticmethod
-    def delete_comment(id: int, db: Session, current_user: UserSchema):
-        comment = db.query(Comment).filter(Comment.id == id).first()
+    def delete_comment(self, db: Session, comment_id: int, current_user: UserSchema):
+        comment = self.get_by_id(db, comment_id)
         if not comment:
             return None
-        if comment.user_id != current_user.id:
-            raise False
-        comment.delete(synchronize_session=False)
-        db.commit()
-
-        return True
+        if comment.owner_id != current_user.id:
+            return False
+        
+        return self.delete(db, comment_id)

@@ -3,10 +3,12 @@ from app.services.comment_service import CommentService
 from app.schemas import Comment, User
 from fastapi import HTTPException, status, Response
 
+comment_service = CommentService()
+
 class CommentController:
     @staticmethod
     def get_comments(id: int, db: Session):
-        comments = CommentService.get_comments(id, db)
+        comments = comment_service.get_comments(db, id)
 
         return [
             {
@@ -27,7 +29,7 @@ class CommentController:
 
     @staticmethod
     def create_comment(comment: Comment, db: Session, current_user: User):
-        new_comment, owner = CommentService.create_comment(comment, db, current_user)
+        new_comment, owner = comment_service.create_comment(db, comment, current_user)
 
         if new_comment is None:
             raise HTTPException(
@@ -48,7 +50,7 @@ class CommentController:
 
     @staticmethod
     def delete_comment(id: int, db: Session, current_user: User):
-        comment = CommentService.create_comment(id, db, current_user)
+        comment = comment_service.create_comment(db, id, current_user)
 
         if comment is None:
             raise HTTPException(

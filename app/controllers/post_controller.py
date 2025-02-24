@@ -17,10 +17,12 @@ s3 = boto3.client(
 )
 BUCKET_NAME = settings.bucket_name
 
+post_service = PostService()
+
 class PostController:
     @staticmethod
     def get_one_post(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-        post_with_users = PostService.get_post_by_id(post_id, current_user.id, db)
+        post_with_users = post_service.get_post_by_id(db, post_id, current_user.id)
         if not post_with_users:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} was not found")
         post, user_id, username, image_url, is_liked = post_with_users
@@ -38,7 +40,7 @@ class PostController:
 
     @staticmethod
     def get_all_posts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), limit: int = 10, search: Optional[str] = ""):
-        posts_with_users = PostService.get_all_posts(db, limit, search, current_user)
+        posts_with_users = post_service.get_all_posts(db, limit, search, current_user)
         return [
             PostResponse(
                 id=post.id,
@@ -58,13 +60,13 @@ class PostController:
     def create_post(content: str, published: bool, file: UploadFile, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
         url = Utils.generate_random_url(10)
         image_url = settings.image_url_domain + url
-        PostService.create_post(content, published, db, image_url, current_user)
+        post_service.create_post(db, content, published, image_url, current_user)
         s3.upload_fileobj(file.file, BUCKET_NAME, url)
         return Response(status_code=status.HTTP_200_OK)
 
     @staticmethod
-    def delete_post(post_id: int, db: Session, current_user: User):
-        result = PostService.delete_post(post_id, db, current_user)
+    def delete_post(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+        result = post_service.delete_post(db, post_id, current_user)
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} doesn't exist")
         if not result:
@@ -72,8 +74,8 @@ class PostController:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-    def update_post(post_id: int, post_data: PostCreate, db: Session, current_user: User):
-        result = PostService.update_post(post_data, db, current_user, post_id)
+    def update_post(post_id: int, post_data: PostCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+        result = post_service.update_post(db, post_id, post_data, current_user)
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} doesn't exist")
         if result is False:

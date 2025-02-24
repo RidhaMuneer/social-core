@@ -1,13 +1,15 @@
 from app.schemas import FollowRequest, User
 from sqlalchemy.orm import Session
-from app.models import User as UserModel, Follower
+from app.models import Follower
+from app.services.user_service import UserService
+
+user_service = UserService()
 
 class FollowService:
     @staticmethod
     def follow(follow_request: FollowRequest, db: Session, current_user: User):
-        user_to_follow = (
-            db.query(UserModel).filter(UserModel.id == follow_request.user_id).first()
-        )
+        user_to_follow = user_service.get_user_by_id(db, follow_request.user_id)
+
         if not user_to_follow:
             return None
     

@@ -1,12 +1,15 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import exists
+from typing import Optional, List
 from app.models import Post, User, Like
-from typing import Optional
 from app.schemas import PostCreate
+from app.services.base_service import BaseService
 
-class PostService:
-    @staticmethod
-    def get_post_by_id(post_id: int, user_id: int, db: Session):
+class PostService(BaseService[Post]):
+    def __init__(self):
+        super().__init__(Post)
+
+    def get_post_by_id(self, db: Session, post_id: int, user_id: int):
         return (
             db.query(
                 Post,
@@ -20,8 +23,7 @@ class PostService:
             .first()
         )
 
-    @staticmethod
-    def get_all_posts(db: Session, limit: int = 10, search: Optional[str] = "", current_user: User = None):    
+    def get_all_posts(self, db: Session, limit: int = 10, search: Optional[str] = "", current_user: User = None) -> List[Post]:
         return (
             db.query(
                 Post,
@@ -38,43 +40,27 @@ class PostService:
             .all()
         )
 
-    @staticmethod
-    def create_post(content: str, published: bool, db: Session, image_url: str, current_user: User):
-        new_post = Post(
-            owner_id=current_user.id,
-            image_url=image_url,
-            content=content,
-            published=published,
-            likes=0,
-        )
-        db.add(new_post)
-        db.commit()
-        db.refresh(new_post)
+    def create_post(self, db: Session, content: str, published: bool, image_url: str, current_user: User) -> Post:
+        return self.create(db, {
+            "owner_id": current_user.id,
+            "image_url": image_url,
+            "content": content,
+            "published": published,
+            "likes": 0,
+        })
 
-    @staticmethod
-    def delete_post(post_id: int, db: Session, current_user: User):
-        post_query = db.query(Post).filter(Post.id == post_id)
-        post = post_query.first()
-
+    def delete_post(self, db: Session, post_id: int, current_user: User) -> Optional[bool]:
+        post = self.get_by_id(db, post_id)
         if not post:
             return None 
         if post.owner_id != current_user.id:
             return False 
+        return self.delete(db, post_id)
 
-        post_query.delete(synchronize_session=False)
-        db.commit()
-        return True 
-
-    @staticmethod
-    def update_post(post_data: PostCreate, db: Session, current_user: User, post_id: int):
-        post_query = db.query(Post).filter(Post.id == post_id)
-        post = post_query.first()
-
+    def update_post(self, db: Session, post_id: int, post_data: PostCreate, current_user: User) -> Optional[bool]:
+        post = self.get_by_id(db, post_id)
         if not post:
             return None 
         if post.owner_id != current_user.id:
             return False 
-
-        post_query.update(post_data.dict(), synchronize_session=False)
-        db.commit()
-        return True
+        return self.update(db, post_id, post_data.dict())
