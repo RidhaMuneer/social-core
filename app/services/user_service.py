@@ -101,13 +101,4 @@ class UserService(BaseService[User]):
             "password": hashed_password,
             "image_url": f"{settings.image_url_domain}{image_url}",
         })
-        # new_user = User(
-        #     username=username,
-        #     email=email,
-        #     password=hashed_password,
-        #     image_url=f"{settings.image_url_domain}{image_url}",
-        # )
-        # db.add(new_user)
-        # db.commit()
-        # db.refresh(new_user)
         return new_user
