@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     aws_secret_access_key: str
     bucket_name: str
     image_url_domain: str
+    redis_hostname: str
+    redis_port: int
 
     class Config:
         env_file = ".env"
