@@ -9,7 +9,13 @@ router = APIRouter()
 
 settings = Settings()
 
-redis_client = redis.Redis(host=settings.redis_hostname, port=settings.redis_port, db=0, decode_responses=True)
+redis_client = redis.Redis(
+    username=settings.redis_username,
+    host=settings.redis_hostname, 
+    port=settings.redis_port, 
+    password=settings.redis_password,
+    db=0,
+    decode_responses=True)
 
 USER_QUEUE = "user_connection_queue"
 CHAT_CHANNEL_PREFIX = "chat_"

@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     image_url_domain: str
     redis_hostname: str
     redis_port: int
+    redis_username: str
+    redis_password: str
 
     class Config:
         env_file = ".env"
