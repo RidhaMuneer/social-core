@@ -13,6 +13,7 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 - **View User Status**: See how many followers and followings a user has.
 - **Image Storage**: User-uploaded images are securely stored in AWS S3.
 - **Protected Routes**: Access to certain routes is restricted to authenticated users with valid JWT tokens.
+- **Peer to Peer chat**: Instant and random chat room between users using Websockets and Redis
 
 ## Tech Stack
 
@@ -21,6 +22,8 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 - **Database**: PostgreSQL
 - **Image Storage**: AWS S3
 - **Authentication**: JWT (JSON Web Tokens)
+- **Chat Queues**: Redis
+- **Peer to Peer connection**: Websockets
 
 ## Setup and Installation
 
@@ -29,6 +32,7 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 - Python 3.8 or later
 - PostgreSQL
 - AWS S3 account
+- Redis installed in the system
 
 ### Installation
 
@@ -51,9 +55,11 @@ Welcome to the Social Media API! This RESTful API allows users to interact on a 
 
 4. **Check the app/config.py file to see what environment variables are needed, put them in a .env file**
 
-5. **Start the server**:
+5. **Make sure that you have Redis installed in the system and your Redis server is up and running**
+
+6. **Start the server**:
     ```bash
     uvicorn app.main:app --reload
     ```
 
-6. **Check Swagger UI for endpoints documentation**
+7. **Check Swagger UI for endpoints documentation**
