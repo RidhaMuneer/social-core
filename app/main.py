@@ -4,6 +4,7 @@ from app.database import engine
 from app.routers import post, user, auth, like, follow, comment, chat
 from fastapi.middleware.cors import CORSMiddleware
 
+# nice app
 app = FastAPI()
 
 origins = ["http://localhost", "http://localhost:8080", "http://localhost:5173", "http://localhost:4173", "social-core-production.up.railway.app"]
